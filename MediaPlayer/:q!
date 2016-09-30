@@ -10,31 +10,18 @@ class UI:
     width = 50  # the width of player.
     height = 100 # the height of the player
     lace = '|' # lace
-
-    @classmethod
     def about(self):
         """ print infos on the screen
+
         """
         print '|`````````````````````````````````````````````````|'
-        print '|                OSMusicPlayer                    |'
+        print '|                SuperMusicPlayer                 |'
         print '|                                                 |'
         print '| Author: xiaomizhou                              |'
         print '| Email : vipzhsh@163.com                         |'
         print '| Link  : https://github.com/VipXiaoMiZhou        |'
         print '|                                                 |'
         print '``````````````````````````````````````````````````'
-
-    @classmethod
-    def help(self,hp):
-        print UI.uiformater('', '`')
-        print UI.logo()
-        print UI.uiformater(' ')
-
-        for key in hp:
-            print UI.uiformater(key + ' ' + hp[key])
-        UI.lace = ''
-        print UI.uiformater('', '`')
-        UI.lace = '|'
     def search(self):
         """Get a string from input
         Returns:
@@ -67,6 +54,15 @@ class UI:
         num = r.randint(0,65)
         return num
 
+    def playUI(self):
+        print '|`````````````````````````````````````````````````|'
+        print '|                                                 |'
+        print '|The love story  Tylor swift                      |'
+        print '|[ ============================== >] 03:23/04:56  |'
+        print '|                                                 |'
+        print '| N [Next] P [Pre] S [Search] R [Random] L [List] |'
+        print '``````````````````````````````````````````````````'
+
     @classmethod
     def uiformater(self, x, mark = ' '):
         """return a format ui string.
@@ -77,13 +73,10 @@ class UI:
         """
         ui = self.lace + x.ljust(self.width-2*len(self.lace),mark) + self.lace
         return ui
+
     def audioInfoUI(self,song, singer):
         x = song + ' ---- ' + singer
         return UI.uiformater(x)
-    @classmethod
-    def logo(self, logo = "OSMUSICPLAYER -0.0.1"):
-        return UI.uiformater(logo)
-
 
     def funcChooseUI(self):
         pre = '[Pre]'
@@ -147,18 +140,19 @@ class UI:
 
 x = UI()
 # x.about()
-d = {'x':'fdfsdfsf', 'y':'asdasd', 'z':'asddd'}
-x.help(d)
 # x.search()
-# print x.uiformater('`','`')
-# print x.logo()
-# print x.uiformater(' ')
-# print x.audioInfoUI('Love Story.mp3','Tylor swift')
-# print x.funcChooseUI()
-
-
-# for i in range(1,200):
-#    ds = x.progressBar(i,199)
-#    print '\r%s' %ds,
-#    sys.stdout.flush()
-#    time.sleep(0.5)
+# print x.random()
+# x.face()
+# x.face2('Dadi','Beyond')
+# x.progressB(277,277)
+print 'over'
+print x.uiformater('`','`')
+print x.uiformater(' ')
+print x.audioInfoUI('Love Story.mp3','Tylor swift')
+print x.funcChooseUI()
+print x.uiformater('`','`')
+for i in range(1,200):
+    ds = x.progressBar(i,199)
+    print '\r%s' %ds,
+    sys.stdout.flush()
+    time.sleep(0.1)
