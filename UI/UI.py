@@ -4,6 +4,7 @@
 import time
 import os
 import sys
+import json
 import string as s
 import random as r
 class UI:
@@ -26,15 +27,22 @@ class UI:
 
     @classmethod
     def help(self,hp):
-        print UI.uiformater('', '`')
-        print UI.logo()
-        print UI.uiformater(' ')
+        """ print helps
+        Args:
+            hp A json format collection.
+            e.g {'N':'Next Play next song','S':'Stop Stop playing'}
+        """
+        print UI.uiformater('', '`')    # print top lace. e.g   `````````````````````````````````````````
+        print UI.logo()                 # print logo info.
+        print UI.uiformater(' ')        # print a black row
 
         for key in hp:
             print UI.uiformater(key + ' ' + hp[key])
-        UI.lace = ''
-        print UI.uiformater('', '`')
-        UI.lace = '|'
+        UI.lace = ''                  # change lace to ' '
+        print UI.uiformater('', '`')  # print bottom lace
+        UI.lace = '|'                 # recover lace
+
+
     def search(self):
         """Get a string from input
         Returns:
@@ -44,28 +52,53 @@ class UI:
         name = raw_input('Search: ')
         return name
 
-    def list(self):
-# 1 means show current song list
-        return 1
-        pass
-# 2 means switch next song
-    def next(self):
-        pass
-# 3 means switch previres song
-    def pre(self):
-        pass
-# 4 means playing the song
-    def play(self):
-        pass
-# 5 means pausing the song
-    def pause(self):
-        pass
-# 6 means stopimh the song
-    def stop(self):
-        pass
-    def random(self):
-        num = r.randint(0,65)
-        return num
+    @classmethod
+    def list(self,infolist):
+        """print song list
+        Args:
+            infolist  a json string contains song infos.
+        e.g:
+        '[
+            {
+                "name": "QQmusic",
+               " list": [
+                            {
+                                "singer": "John",
+                                "song": "Doe"
+                            },
+                            {
+                                "singer": "Anna",
+                                "song": "Smith"
+                            },
+                            {
+                                "singer": "Peter",
+                                "song": "Jones"
+                            }
+                        ]
+            }
+        ]'
+        """
+        print UI.uiformater('', '`')    # print top lace. e.g   `````````````````````````````````````````
+        print UI.logo()                 # print logo info.
+        print UI.uiformater(' ')        # print a black row
+
+        lists = json.loads(infolist)    # convert string to json obj
+
+        length = len(lists)
+        i = 0
+        for l in lists:
+           print UI.uiformater(l['name'])
+           s = l['list']
+           for ss in s:
+               i = i + 1
+               print  UI.uiformater('%d' %(i) + '   ' + ss['singer'] + '   ' + ss['song'])
+
+        UI.lace = ''                  # change lace to ' '
+        print UI.uiformater('', '`')  # print bottom lace
+        UI.lace = '|'                 # recover lace
+
+
+
 
     @classmethod
     def uiformater(self, x, mark = ' '):
@@ -77,9 +110,25 @@ class UI:
         """
         ui = self.lace + x.ljust(self.width-2*len(self.lace),mark) + self.lace
         return ui
+
+
     def audioInfoUI(self,song, singer):
         x = song + ' ---- ' + singer
         return UI.uiformater(x)
+
+    @classmethod
+    def play(self, p):
+        print UI.uiformater('', '`')    # print top lace. e.g   `````````````````````````````````````````
+        print UI.logo()                 # print logo info.
+        print UI.uiformater(' ')        # print a black row
+
+        for key in p:
+            print UI.uiformater(key + ' : ' + p[key])
+        k = UI()
+        UI.lace = ''                  # change lace to ' '
+        print UI.uiformater('', '`')  # print bottom lace
+        UI.lace = '|'                 # recover lace
+
     @classmethod
     def logo(self, logo = "OSMUSICPLAYER -0.0.1"):
         return UI.uiformater(logo)
@@ -91,9 +140,23 @@ class UI:
         pause = '[Pause]'
         stop = '[Stop]'
         play = '[Play]'
-        x = pre + ' ' + play + ' ' + nxt
+        x = pre + ' ' + play + ' ' + nxt + ' ' + stop
         return UI.uiformater(x)
 
+class ProgressBar:
+    # time.sleep(0.5)
+    width = 50
+    @classmethod
+    def start(self,current, total):
+        b = ProgressBar()
+        z = b.progressBar(current,total)
+        print '\r%s' %z,
+        sys.stdout.flush()
+
+    def stop(self):
+        pass
+    def pause(self):
+        pass
     def progressBar(self,process,total):
         """Print a processbar on the console
         Args:
@@ -140,25 +203,24 @@ class UI:
         def bar(process, total):
             """create a time bar """
             # current
-            m = int(float(process)/total * 40)
-            return '['.ljust(m,'=') + '>]' + timeString(process,total).rjust(50-m)
-
+            m = int(float(process)/total * self.width * 0.8)
+            return '['.ljust(m,'=') + '>]' + timeString(process,total).rjust(self.width-m - 2)
         return bar(process, total)
 
-x = UI()
-# x.about()
-d = {'x':'fdfsdfsf', 'y':'asdasd', 'z':'asddd'}
-x.help(d)
-# x.search()
+if __name__ == '__main__':
+    x = UI()
+    p = ProgressBar()
+    x.about()
+    d = {'x':'fdfsdfsf', 'y':'asdasd', 'z':'asddd'}
+    x.help(d)
+    c = {'singer':'Kobe','song':'You are a gay','year':'2012.03.21','amblu':'tomorrrow'}
+    x.play(c)
+    l ='[{"name": "QQ music","list":[{"singer": "John","song": "Doe"},{"singer": "Anna","song": "Smith"},{"singer": "Peter","song": "Jones"}]}]'
+    x.list(l)
+    for i in range(0,200):
+        p.start(i,199)
+        time.sleep(0.1)
+    x.search()
 # print x.uiformater('`','`')
 # print x.logo()
 # print x.uiformater(' ')
-# print x.audioInfoUI('Love Story.mp3','Tylor swift')
-# print x.funcChooseUI()
-
-
-# for i in range(1,200):
-#    ds = x.progressBar(i,199)
-#    print '\r%s' %ds,
-#    sys.stdout.flush()
-#    time.sleep(0.5)
