@@ -1,12 +1,12 @@
 '''
 Created on Oct 10, 2016
 @author: xxingzh.
-@description : UI controller.
+@description : UIA controller.
 @date: 10/10/2016 4:03 PM.
 @group: XiaoMiZhou Team.
 '''
-
 from UI import UI
+from Logging.Logging import Logger
 class Controller(object):
     '''
     classdocs
@@ -15,7 +15,7 @@ class Controller(object):
         '''
         Constructor
         '''
-        ui = UI()     # import UI module
+        ui = UI()     # import UIA module
         self.params = params 
     def about(self):
         ui.about();
