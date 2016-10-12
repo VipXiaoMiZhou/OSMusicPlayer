@@ -13,7 +13,7 @@ class Log(object):
     handler=logging.FileHandler(dir+'/system.log')
     
     #create a formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s  %(message)s')
     handler.setFormatter(formatter)
     handler.setLevel(logging.NOTSET)
     
@@ -25,5 +25,5 @@ class Log(object):
         return log
     
 if __name__=='__main__':
-    x=Log.getLogger('x')
+    x=Log.getLogger('X')
     x.info('X')

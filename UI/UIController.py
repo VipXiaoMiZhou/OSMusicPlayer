@@ -6,15 +6,18 @@ Created on Oct 10, 2016
 @group: XiaoMiZhou Team.
 '''
 from UI import UI
-from Logging.Logging import Logger
+from Logging.Logger import Log
 class Controller(object):
     '''
     classdocs
     '''
+    logger=Log.getLogger('UIController')
+    
     def __init__(self, params):
         '''
         Constructor
         '''
+        self.logger.info('init Controller')    
         ui = UI()     # import UIA module
         self.params = params 
     def about(self):
