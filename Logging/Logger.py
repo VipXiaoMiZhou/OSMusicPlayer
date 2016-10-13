@@ -25,5 +25,6 @@ class Log(object):
         return log
     
 if __name__=='__main__':
+    # useage
     x=Log.getLogger('X')
     x.info('X')

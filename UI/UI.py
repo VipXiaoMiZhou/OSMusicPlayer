@@ -34,8 +34,8 @@ class UI:
         print UI.logo()                 # print logo info.
         print UI.uiformater(' ')        # print a black row
 
-        for key in hp:
-            print UI.uiformater(key + ' ' + hp[key])
+        for key,value in hp.items():
+            print UI.uiformater(key + ' ' + value)
         UI.lace = ''                  # change lace to ' '
         print UI.uiformater('', '`')  # print bottom lace
         UI.lace = '|'                 # recover lace
