@@ -3,3 +3,10 @@
 
 #pyc
 *.pyc
+
+#txt
+*.txt
+
+#mp3.wav
+*.ma3
+*.wav
