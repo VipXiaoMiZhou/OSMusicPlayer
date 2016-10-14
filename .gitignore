@@ -8,5 +8,8 @@
 *.txt
 
 #mp3.wav
-*.ma3
+*.mp3
 *.wav
+
+# ini
+*.ini

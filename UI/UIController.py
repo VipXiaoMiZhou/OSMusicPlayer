@@ -8,7 +8,6 @@ Created on Oct 10, 2016
 from UI import UI
 from Logging.Logger import Log
 import ConfigParser
-from cookielib import logger
 from distutils.command.config import config
 
 class Controller(object):
