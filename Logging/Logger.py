@@ -19,7 +19,7 @@ class Singleton(type):
             self.__instances[self] = super(Singleton,self).__call__(*args,**kwargs)
         return self.__instances[self]
 
-class Log(metaclass = Singleton):
+class Log(Singleton):
     # create a handler
     handler=logging.FileHandler(dir+'/system.log')
     

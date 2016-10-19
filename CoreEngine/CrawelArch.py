@@ -24,6 +24,10 @@ import random
 import urllib.request
 import datetime
 import time
+import re
+from locale import str
+from reportlab.graphics.charts.utils import seconds2str
+from bs4.tests.test_docs import __metaclass__
 
 config = configparser.ConfigParser()
 __all__ = []
@@ -35,64 +39,84 @@ __updated__ = '2016-10-14'
 Created on Oct 14, 2016
 @author: xxingzh
 '''
-class Singleton(type):
-    __instances = {}
-    
-    # __call__ makes the class can be use like this:
+class Singleton(object):
+   # __call__ makes the class can be use like this:
     # e.g 
     # x=Singleton(args)
-    def __call__(self, *args, **kwargs):
-        if self not in self.__instances:
-            self.__instances[self] = super(Singleton,self).__call__(*args,**kwargs)
-        return self.__instances[self]
-
+#     def __call__(self, *args, **kwargs):
+    def __new__(cls, *args, **kw):  
+        if not hasattr(cls, '_instance'):  
+            orig = super(Singleton, cls)  
+            cls._instance = orig.__new__(cls, *args, **kw)  
+        return cls._instance  
 '''
-
+URLManager
 '''
-class URLManager(metaclass = Singleton):
+class URLManager():
     '''URLManager 
         It is a singleton class used to manager all urls.
     '''
-    def __init__(self):
-        self.url_reposity = set([]) # store all urls
-        self.new_url = set([])      # used to store new urls
-           
-    def addNewUrl(self,urls):
+    url_reposity = set([]) # store all urls
+    new_url = set([])      # used to store new urls
+#     def __init__(self):
+#         self.url_reposity = set([]) # store all urls
+#         self.new_url = set([])      # used to store new urls
+    @staticmethod       
+    def add_new_url(urls):
         if len(urls) == 0:
             return
+        i=0
         for url in urls:
-            if url in self.url_reposity:
+            if url in URLManager.url_reposity:
                 continue
             else:
-                self.new_url.add(url)
-          
-    def getUrl(self):   
-        if len(self.new_url) == 0 :
+                URLManager.new_url.add(url)
+    @staticmethod
+    def is_empty():
+        if len(URLManager.new_url) ==0:
+            return True
+        else:
+            return False
+    @staticmethod
+    def size():
+        return len(URLManager.new_url)
+    @staticmethod     
+    def get_url():   
+        if len(URLManager.new_url) == 0 :
             return
-        url = self.new_url.pop()
-        self.url_reposity.add(url)
+        url = URLManager.new_url.pop()
+        URLManager.url_reposity.add(url)
         return url
-     
-    def getUrlRepository(self):
-        return self.url_reposity
+    @staticmethod
+    def get_url_repository():
+        return URLManager.url_reposity
+    
   
-  
-class Requester(object):
-    def openUrl(self,url):   
-        head=Disguiser.getHead()
+'''ok
+'''
+class Requester(Singleton):
+    @classmethod
+    def open_url(self,url):   
+        head=Disguiser.get_head()
         req = urllib.request.Request(url=url,headers=head)
-        with urllib.request.urlopen(req) as r:
-            print(type(r.status))
-            if r.status==200:
-                pass
+        html_str=''
+        try:
+            # open url and get the reponse
+            Response = urllib.request.urlopen(req)
+            if Response.status==200:
+                html_str=Response.read().decode('utf-8')
             else:
-                return
-            print(req.header_items())
-            print (r.read().decode('utf-8'))
+                # handle other status
+                print(Response.header_items())
+        except Exception as e:
+            print(e)
+        Disguiser.delay()
+        return html_str
+ 
 
-
-
-class Disguiser(object):
+'''ok
+'''    
+class Disguiser(Singleton):
     '''Disguiser
         Used to disguised http request.
     '''
@@ -127,22 +151,139 @@ class Disguiser(object):
                          'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/29.0'
                          ]
     @staticmethod
-    def getHead():
-        x = Disguiser()
-        def readIniFile():
-            pass
-        x.head['User-Agent'] = random.choice(x.user_agent)
-        return x.head
-    
+    def get_head():
+        d = Disguiser()
+        d.head['User-Agent'] = random.choice(d.user_agent)
+        return d.head
 
-   
+    @staticmethod
+    def delay():
+        sec=random.randint(100,10000)
+        time.sleep(sec/1000)
+        
+
+class HtmlParser():
+    '''HtmlParser
+        Used to parse html.
+    '''        
+    @staticmethod
+    def parse(html_str):
+        print(html_str)
+        return 'result'
+
+  
+class ResultHander(object):
+    __metaclass__=Singleton
+    def dohandle(self,result):
+        pass
+    pass
+
+
+class url_parse(HtmlParser):
+    
+    pass
+
+class Spide():
+    parser=HtmlParser()
+    pub_url_manager=URLManager()
+    result_handler=ResultHander()
+    x=Requester()
+    # https://book.douban.com/tag/%E9%9A%8F%E7%AC%94
+    @staticmethod
+    def do_crawel(keyword,start,offset):
+        
+        if start==0 : start=1
+        if (start > offset) or (start< 0) or (offset< 0):
+            print('Input  Illegal, Please Check Input and Run Again!')
+            return
+        ur=URLManager()
+        subject = 'https://book.douban.com/tag/'
+        data={
+              'tag':urllib.parse.quote(keyword),
+              'start':0,
+              'type':'T'
+              }
+        while True: 
+            data['start']=(start-1)*20
+            url=subject+data['tag']+'?start='+str(data['start'])+'&type='+data['type']
+            html_str=Requester.open_url(url)
+            if html_str == '':
+                print('end')
+                return
+#             urls=HtmlParser.get_url_from_html(html_str,r"https://book.douban.com/subject/\d+")
+            urls=re.findall(r"https://book.douban.com/subject/\d+", html_str)
+            ur.add_new_url(urls)
+            print(len(urls),urls)
+            print(url)
+            print(ur.size())
+#             while URLManager.is_empty():
+#                 html=Spide.request.open_url(url)
+#                 result=HtmlParser.parse(html)
+#                 ResultHander.dohandle(result) 
+            start=start+1
+            if ((start-1)*20) >((offset-1)*20):
+                break
+    def craw_books(self,keyword,start,offset):
+        #https://book.douban.com/subject/20427187/comments/hot?p=1
+        pass
+    
+    @staticmethod
+    def craw_comments(keyword,start,offset):
+        if keyword=='':return
+        while True:
+            url='https://book.douban.com/subject/'+str(keyword)+'/comments/hot?p='+str(start)
+            print(url)
+            html_str=Requester.open_url(url)
+            print(html_str)
+            if html_str=='':
+                print('end')
+                return
+#             ResultHander.dohandle(HtmlParser.parse(html_str))
+            start=start+1
+            if start > offset:
+                break
+    @staticmethod
+    def craw_annotations(keyword,start,offset):
+        #https://book.douban.com/subject/20427187/annotation?sort=rank&start=0
+        if keyword=='' or start>offset or start<0:
+            print('Input  Illegal, Please Check Input and Run Again!')
+            return
+        data={
+              'action':'https://book.douban.com/subject/',
+              'keyword':keyword,
+              'tag':'annotation',
+              'sort':'rank',
+              'start':start
+              }
+        url_manager=URLManager()
+        while True:
+            data['start']=(start-1)*10
+            url=data['action']+data['keyword']+'/'+data['tag']+'?'+'sort='+data['sort']+'&'+'start='+str(data['start'])
+            print(url)
+            html_str=Requester.open_url(url)
+            #https://book.douban.com/annotation/23575193/
+            urls=re.findall(r"https://book.douban.com/annotation/\d+", html_str)
+            url_manager.add_new_url(urls)
+            print(len(urls),urls)
+#             while url_manager.is_empty():
+#                 url=url_manager.get_url()
+#                 html=Requester.open_url(url)
+#                 #ResultHander.dohandle(HtmlParser.parse(html))
+#             pass
+            print(url_manager.size())
+            start=start+1
+            if ((start-1)*10)>((offset-1)*10):
+                break
+        pass
+    def craw_reviews(self,keyword,start,offset):
+        pass
+    
+    
 if __name__=='__main__':
     
-    x=Requester()
-    print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
-      
-    x.openUrl('http://www.jianshu.com/p/de4af954fcbe')
-    print('Ok')
-    print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+#     Spide.do_crawel('历史',2,3)
+#     
+#     Spide.craw_comments(20427187,1 ,2)
+    Spide.craw_annotations(str(20427187), 1, 2)
     
     
