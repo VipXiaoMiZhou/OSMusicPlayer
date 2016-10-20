@@ -59,7 +59,6 @@ class NetEase:
     # 根据单曲 ids 获得单曲详细
     def songs_detail(self, ids, offset=0):
         action = 'http://music.163.com/api/song/detail?ids=[' + (',').join(map(str, ids)) + ']'
-        print('crawl: ', action)
         try:
             data = self.httpRequest('GET', action)
 #             print(data)
@@ -68,48 +67,45 @@ class NetEase:
             return []
 
     # 根据专辑 id 获取单曲
-    def alum(self, alum_id):
+    def alum_songs(self, alum_id):
         action = 'http://music.163.com/api/album/' + str(alum_id)
-        print ('crawl: ', action)
         try:
             data = self.httpRequest('GET', action)
-            return data['alum']['songs']
+            # log.info(data)
+            return data['album']['songs']
         except:
             return []
 
     # 根据歌手 id 获得热门50单曲
     def artist_songs(self, artist_id):
         action = 'http://music.163.com/api/artist/' + str(artist_id)
-        print('crawl: ', action)
         try:
             data = self.httpRequest('GET', action)
+            # log.info(data)
             return data['hotSongs']
         except:
             return []
 
     # 根据歌手 id 获得专辑
     def artist_alums(self, artist_id, offset=0, limit=1):
-        action = 'http://music.163.com/api/artist/albums/' + str(artist_id)
-        print('crawl: ', action)
+        action = 'http://music.163.com/api/artist/albums/' + str(artist_id) + '?offset=' + str(offset) + "&limit=" + str(limit)
         try:
-            data = {
-                'offset': offset,
-                'limit': limit
-            }
-            data = self.httpRequest('GET', action, data)
+
+            data = self.httpRequest('GET', action)
+            # log.info(data)
             return data['hotAlbums']
         except:
             return []
 
     # HTTP 请求
     def httpRequest(self, method, action, query=None):
+        print(method, ' 请求')
+        print('crawl: ', action)
+        log.info('crawl: ' + action)
         if(method == 'GET'):
-            print('get 请求')
-            url = action if (query == None) else (action + '?' + query)
-            connection = requests.get(url, headers=self.header, timeout=default_timeout)
-
+            connection = requests.get(action, headers=self.header, timeout=default_timeout)
         elif(method == 'POST'):
-            print('post 请求')
+
             # f = open("../Proxy/gnproxy")
             # lines = f.readlines()
             # proxys = []
