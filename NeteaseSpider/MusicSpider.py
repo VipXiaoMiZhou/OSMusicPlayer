@@ -1,6 +1,14 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+Created on 2016-10-20
+@author: Tiger Xie <xie_tiger@163.com>
+'''
+
 import requests
 import json
 from OSMusicPlayer.Logging.Logger import Log
+import os
 default_timeout = 3
 log = Log.getLogger('NeteaseSpider')
 
@@ -194,3 +202,18 @@ class NetEase:
                 temp.append(artist_info)
 
         return temp
+
+    # 下载音乐
+    def download_mp3(self, song_info, save_dir):
+        # 保存文件名： 歌名-歌手-专辑.mp3
+        artist = '&'.join(str(a) for a in song_info['artist']) if type(song_info['artist']) is list else song_info['artist']
+        file_name = song_info['song_name'] + '-' + artist + '-' + song_info['album_name'] + '.mp3'
+        fpath = os.path.join(save_dir, file_name)
+        if os.path.exists(fpath):
+            return '已经下载过此mp3'
+
+        data_byte = requests.get(song_info['mp3_url']).text
+        file = open(fpath, 'wb')
+        file.write(data_byte)
+        file.close()
+        return '已经下载好了'

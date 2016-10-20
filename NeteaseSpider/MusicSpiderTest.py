@@ -1,19 +1,20 @@
 # from MusicSpider import NetEase
 from OSMusicPlayer.Logging.Logger import Log
 from OSMusicPlayer.NeteaseSpider.MusicSpider import NetEase
+import os
 
 netEase = NetEase()
 log = Log.getLogger('NeteaseSpider')
 
 # 搜索歌曲 stype=1
-# s = "imagine"
-# stype = 1
-# limit = 1
+s = "imagine"
+stype = 1
+limit = 1
 
 #  专辑 stype=10
-s = "Imagine"
-stype = 10
-limit = 1
+# s = "Imagine"
+# stype = 10
+# limit = 1
 
 # 歌手 stype=100
 # s = "John Lennon"
@@ -50,6 +51,13 @@ print(artist_songs)
 # log.info(artist_songs)
 log.info("==================挖掘歌手50首热门单曲================")
 dig_type = "songs"
-datalist = netEase.dig_info(artist_songs, dig_type)
-print(datalist)
-# log.info(datalist)
+datalist_hot = netEase.dig_info(artist_songs, dig_type)
+print(datalist_hot)
+# log.info(datalist_hot)
+
+# 下载 mp3
+pwd = os.path.abspath(os.path.dirname(__file__))
+print(pwd)
+result = netEase.download_mp3(datalist[0], pwd)
+print(result)
+log.info(result)
