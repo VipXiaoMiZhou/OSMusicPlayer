@@ -4,7 +4,6 @@ from OSMusicPlayer.Logging.Logger import Log
 default_timeout = 3
 log = Log.getLogger('NeteaseSpider')
 
-
 class NetEase:
     def __init__(self):
         self.header = {
@@ -18,7 +17,7 @@ class NetEase:
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
         }
 
-    # biuld search
+    # 建立挖掘数据
     def build_dig(self, s, stype, limit):
         data = self.search(s, stype=stype, limit=limit)
         print(data)
@@ -26,10 +25,10 @@ class NetEase:
         dig_type = ""
 
         if (stype == 1):
-            # 通过 ids 获得歌曲 songs 详细
             song_ids = []
             for i in range(0, len(data['result']['songs']) ):
                 song_ids.append( data['result']['songs'][i]['id'] )
+            # 通过 ids 获得 songs 详细
             dig_data = self.songs_detail(song_ids)
             dig_type = 'songs'
 
@@ -57,14 +56,48 @@ class NetEase:
         }
         return self.httpRequest('POST', action, data)
 
-    # song ids 拼接成 song urls 得到 details
+    # 根据单曲 ids 获得单曲详细
     def songs_detail(self, ids, offset=0):
         action = 'http://music.163.com/api/song/detail?ids=[' + (',').join(map(str, ids)) + ']'
-        print(action)
+        print('crawl: ', action)
         try:
             data = self.httpRequest('GET', action)
 #             print(data)
             return data['songs']
+        except:
+            return []
+
+    # 根据专辑 id 获取单曲
+    def alum(self, alum_id):
+        action = 'http://music.163.com/api/album/' + str(alum_id)
+        print ('crawl: ', action)
+        try:
+            data = self.httpRequest('GET', action)
+            return data['alum']['songs']
+        except:
+            return []
+
+    # 根据歌手 id 获得热门50单曲
+    def artist_songs(self, artist_id):
+        action = 'http://music.163.com/api/artist/' + str(artist_id)
+        print('crawl: ', action)
+        try:
+            data = self.httpRequest('GET', action)
+            return data['hotSongs']
+        except:
+            return []
+
+    # 根据歌手 id 获得专辑
+    def artist_alums(self, artist_id, offset=0, limit=1):
+        action = 'http://music.163.com/api/artist/albums/' + str(artist_id)
+        print('crawl: ', action)
+        try:
+            data = {
+                'offset': offset,
+                'limit': limit
+            }
+            data = self.httpRequest('GET', action, data)
+            return data['hotAlbums']
         except:
             return []
 

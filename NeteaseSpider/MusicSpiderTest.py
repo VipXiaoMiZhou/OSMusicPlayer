@@ -1,5 +1,5 @@
 # from MusicSpider import NetEase
-from OSMusicPlayer.Logging.Logger import Log
+from OSMusicPlayer.Logging.Logger imort Log
 from OSMusicPlayer.NeteaseSpider.MusicSpider import NetEase
 
 netEase = NetEase()
