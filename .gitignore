@@ -10,6 +10,7 @@
 #mp3.wav
 *.mp3
 *.wav
+NeteaseSpider/Mp3
 
 # ini
 *.ini

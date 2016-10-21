@@ -56,8 +56,10 @@ print(datalist_hot)
 # log.info(datalist_hot)
 
 # 下载 mp3
+log.info("==================下载mp3================")
 pwd = os.path.abspath(os.path.dirname(__file__))
-print(pwd)
-result = netEase.download_mp3(datalist[0], pwd)
+Mp3Dir = os.path.join(pwd, 'Mp3')
+print(Mp3Dir)
+result = netEase.download_mp3(datalist[0], Mp3Dir)
 print(result)
 log.info(result)
