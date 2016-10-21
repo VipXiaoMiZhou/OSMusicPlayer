@@ -28,6 +28,7 @@ import re
 from locale import str
 from reportlab.graphics.charts.utils import seconds2str
 from bs4.tests.test_docs import __metaclass__
+from bs4 import BeautifulSoup 
 
 config = configparser.ConfigParser()
 __all__ = []
@@ -39,6 +40,11 @@ __updated__ = '2016-10-14'
 Created on Oct 14, 2016
 @author: xxingzh
 '''
+pwd=os.getcwd() #get pwd
+cnf_path=os.path.join(os.path.dirname(os.getcwd()),'Config')
+log_path=os.path.join(os.path.dirname(os.getcwd()),'Logs')
+
+
 class Singleton(object):
    # __call__ makes the class can be use like this:
     # e.g 
@@ -52,7 +58,7 @@ class Singleton(object):
 '''
 URLManager
 '''
-class URLManager():
+class URLManager(Singleton):
     '''URLManager 
         It is a singleton class used to manager all urls.
     '''
@@ -72,13 +78,13 @@ class URLManager():
             else:
                 URLManager.new_url.add(url)
     @staticmethod
-    def is_empty():
+    def url_is_empty():
         if len(URLManager.new_url) ==0:
             return True
         else:
             return False
     @staticmethod
-    def size():
+    def url_size():
         return len(URLManager.new_url)
     @staticmethod     
     def get_url():   
@@ -112,14 +118,12 @@ class Requester(Singleton):
             print(e)
         Disguiser.delay()
         return html_str
- 
-
-'''ok
-'''    
+   
 class Disguiser(Singleton):
     '''Disguiser
         Used to disguised http request.
     '''
+    user_agent=[]
     def __init__(self):
         '''
         Constructor
@@ -131,36 +135,35 @@ class Disguiser(Singleton):
                    'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
                    'User-Agent':''
                    }
-        self.user_agent=[
-                         'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-                         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36',
-                         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2226.0 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.4; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2224.3 Safari/537.36',
-                         'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1',
-                         'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
-                         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0',
-                         'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0',
-                         'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20130401 Firefox/31.0',
-                         'Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0',
-                         'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:29.0) Gecko/20120101 Firefox/29.0',
-                         'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/29.0'
-                         ]
+        
+    def get_agent(self):
+        '''get a user-agent from file or a default one.
+             read user-agent from user_agent.cnf.when methond was called first time,it will read from file.
+        '''
+        if len(self.user_agent)==0:
+            try:
+                agent=open(os.path.join(cnf_path,'user_agent.cnf'))
+                for line in agent.readlines():
+                    # when line is null,return a default one.
+                    if line=='':
+                        raise Exception
+                    line=line[:-1]  #delete '/n' at end of string.
+                    self.user_agent.append(line)
+            except Exception:
+                print('read file err')
+                # if err, return a default agent
+                return 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0'
+        return random.choice(self.user_agent)    
     @staticmethod
     def get_head():
         d = Disguiser()
-        d.head['User-Agent'] = random.choice(d.user_agent)
+        d.head['User-Agent'] = d.get_agent()
         return d.head
 
     @staticmethod
     def delay():
         sec=random.randint(100,10000)
         time.sleep(sec/1000)
-        
 
 class HtmlParser():
     '''HtmlParser
@@ -183,67 +186,96 @@ class url_parse(HtmlParser):
     
     pass
 
-class Spide():
-    parser=HtmlParser()
-    pub_url_manager=URLManager()
+class Spider():
+    parser=HtmlParser()  
+    pub_url_manager=URLManager()    
     result_handler=ResultHander()
     x=Requester()
     # https://book.douban.com/tag/%E9%9A%8F%E7%AC%94
     @staticmethod
     def do_crawel(keyword,start,offset):
+        pass
+     
         
+    def crawl_url(self,keyword,start,offset):
+        #https://book.douban.com/subject/20427187/comments/hot?p=1
         if start==0 : start=1
         if (start > offset) or (start< 0) or (offset< 0):
             print('Input  Illegal, Please Check Input and Run Again!')
             return
-        ur=URLManager()
-        subject = 'https://book.douban.com/tag/'
         data={
+              'action':'https://book.douban.com/tag/',
               'tag':urllib.parse.quote(keyword),
               'start':0,
               'type':'T'
               }
         while True: 
             data['start']=(start-1)*20
-            url=subject+data['tag']+'?start='+str(data['start'])+'&type='+data['type']
+            url=data['action']+data['tag']+'?start='+str(data['start'])+'&type='+data['type']
             html_str=Requester.open_url(url)
-            if html_str == '':
-                print('end')
-                return
-#             urls=HtmlParser.get_url_from_html(html_str,r"https://book.douban.com/subject/\d+")
             urls=re.findall(r"https://book.douban.com/subject/\d+", html_str)
-            ur.add_new_url(urls)
-            print(len(urls),urls)
-            print(url)
-            print(ur.size())
-#             while URLManager.is_empty():
-#                 html=Spide.request.open_url(url)
-#                 result=HtmlParser.parse(html)
-#                 ResultHander.dohandle(result) 
+            self.pub_url_manager.add_new_url(urls)
             start=start+1
             if ((start-1)*20) >((offset-1)*20):
                 break
-    def craw_books(self,keyword,start,offset):
-        #https://book.douban.com/subject/20427187/comments/hot?p=1
-        pass
     
-    @staticmethod
-    def craw_comments(keyword,start,offset):
+    @classmethod
+    def crawl_comments(self,keyword,start,offset):
         if keyword=='':return
-        while True:
-            url='https://book.douban.com/subject/'+str(keyword)+'/comments/hot?p='+str(start)
-            print(url)
+        keyword=str(keyword)
+        result={'bookid':keyword,'comment-info':[]}
+        while True: 
+            url='https://book.douban.com/subject/'+keyword+'/comments/hot?p='+str(start)
             html_str=Requester.open_url(url)
-            print(html_str)
-            if html_str=='':
-                print('end')
-                return
-#             ResultHander.dohandle(HtmlParser.parse(html_str))
+            soup = BeautifulSoup(html_str,'lxml')
+            for item in soup.find_all('li',class_="comment-item"):
+                info={'commentator':'',
+                  'avatar':'',
+                  'commentator_homepage':'',
+                  'comment_content':'',
+                  'comment_date':'',
+                  'comment_vote':'',
+                  'star':''
+                }
+                info['commentator']=item.a['title']            # title
+                info['commentator_homepage']=item.a['href']    # homepage
+                info['avatar']=item.img['src']                 # avatar image
+                info['comment_content']=item.p.text            # comment_content
+        
+                # comment date
+                comment_data=item.find_all(text=re.compile(r'\d{4}-\d{2}-\d{2}'))
+                if len(comment_data)>0:
+                    info['comment_date']=comment_data[0].string
+                    # vote_count
+                vote_count=item.find_all('span',class_='vote-count')    
+                if len(vote_count)>0:
+                    info['comment_vote']=vote_count[0].text
+                else:
+                    info['comment_vote']=0
+        
+                # start  
+                # <span class="user-stars allstar50 rating" title="力荐"></span>
+                star=item.find_all('span',class_=re.compile(r'(?<=allstar)\d+'))
+                if(len(star))>0:
+                    z=star[0].attrs['class']  # ['user-stars','allstar50','rating']
+                    if len(z)>1:
+                        point=z[1]
+                        s=re.findall(r'\d+',point)   #['50']
+                        if len(s)>=0:
+                            info['star']=s[0]   #50
+#                             print(s[0])
+                        else:
+                            info['star']=0
+#                 print(info)
+#                 resultx.append(info)
+                result['comment-info'].append(info)
+#             print(resultx) 
             start=start+1
             if start > offset:
+                print(result)
                 break
     @staticmethod
-    def craw_annotations(keyword,start,offset):
+    def crawl_annotations(keyword,start,offset):
         #https://book.douban.com/subject/20427187/annotation?sort=rank&start=0
         if keyword=='' or start>offset or start<0:
             print('Input  Illegal, Please Check Input and Run Again!')
@@ -275,7 +307,9 @@ class Spide():
             if ((start-1)*10)>((offset-1)*10):
                 break
         pass
-    def craw_reviews(self,keyword,start,offset):
+    
+    
+    def crawl_reviews(self,keyword,start,offset):
         pass
     
     
@@ -283,7 +317,4 @@ if __name__=='__main__':
     
 #     Spide.do_crawel('历史',2,3)
 #     
-#     Spide.craw_comments(20427187,1 ,2)
-    Spide.craw_annotations(str(20427187), 1, 2)
-    
-    
+    Spider.crawl_comments(20427187,1,5) 

@@ -14,3 +14,6 @@ NeteaseSpider/Mp3
 
 # ini
 *.ini
+
+# cnf
+*.cnf
