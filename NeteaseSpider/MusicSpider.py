@@ -11,6 +11,7 @@ from OSMusicPlayer.Logging.Logger import Log
 import os
 import urllib.request
 log = Log.getLogger('NeteaseSpider')
+default_timeout = 3
 
 class NetEase:
     def __init__(self):
@@ -24,7 +25,6 @@ class NetEase:
             'Referer': 'http://music.163.com/search/',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
         }
-        self.default_timeout = 3
 
     # 建立挖掘数据
     def build_dig(self, s, stype, limit=1):
@@ -70,7 +70,7 @@ class NetEase:
         action = 'http://music.163.com/api/song/detail?ids=[' + (',').join(map(str, ids)) + ']'
         try:
             data = self.httpRequest('GET', action)
-#             print(data)
+            #             print(data)
             return data['songs']
         except:
             return []
@@ -114,7 +114,7 @@ class NetEase:
 
         connection = None
         if(method == 'GET'):
-            connection = requests.get(action, headers=self.header, timeout=self.default_timeout)
+            connection = requests.get(action, headers=self.header, timeout=default_timeout)
         elif(method == 'POST'):
 
             # f = open("../Proxy/gnproxy")
@@ -149,7 +149,7 @@ class NetEase:
                 action,
                 data=query,
                 headers=self.header,
-                timeout=self.default_timeout,
+                timeout=default_timeout,
             )
 
         if connection is not None:
@@ -164,7 +164,7 @@ class NetEase:
     # 挖数据
     def dig_info(self, dig_data ,dig_type):
         temp = []
-        
+
         if (dig_type == 'songs'):
             print('搜索歌曲')
             for i in range(0, len(dig_data) ):
@@ -173,7 +173,7 @@ class NetEase:
                     'artist': [],
                     'song_name': dig_data[i]['name'],
                     'album_name': dig_data[i]['album']['name'],
-                    'mp3_url': dig_data[i]['mp3Url']   
+                    'mp3_url': dig_data[i]['mp3Url']
                 }
                 if 'artist' in dig_data[i]:
                     song_info['artist'] = dig_data[i]['artist']
