@@ -1,22 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
 '''
-CoreEngine.CrawelArch -- shortdesc
-
-CoreEngine.CrawelArch is a description
-
-It defines classes_and_methods
-
 @author:     user_name
-
 @copyright:  2016 organization_name. All rights reserved.
-
 @license:    license
-
 @contact:    user_email
 @deffield    updated: Updated
 '''
-
 import sys
 import os
 import configparser
@@ -29,6 +20,7 @@ from locale import str
 from reportlab.graphics.charts.utils import seconds2str
 from bs4.tests.test_docs import __metaclass__
 from bs4 import BeautifulSoup 
+import asyncio
 
 config = configparser.ConfigParser()
 __all__ = []
@@ -165,38 +157,38 @@ class Disguiser(Singleton):
         sec=random.randint(100,10000)
         time.sleep(sec/1000)
 
-class HtmlParser():
-    '''HtmlParser
-        Used to parse html.
-    '''        
-    @staticmethod
-    def parse(html_str):
-        print(html_str)
-        return 'result'
 
-  
-class ResultHander(object):
-    __metaclass__=Singleton
-    def dohandle(self,result):
-        pass
-    pass
-
-
-class url_parse(HtmlParser):
-    
-    pass
-
-class Spider():
-    parser=HtmlParser()  
+class Spider(): 
     pub_url_manager=URLManager()    
-    result_handler=ResultHander()
-    x=Requester()
     # https://book.douban.com/tag/%E9%9A%8F%E7%AC%94
+    loop = asyncio.get_event_loop()
+    annotation_future = asyncio.Future()
+    book_future = asyncio.Future()
+    review_future = asyncio.Future()
+    comment_future = asyncio.Future()
+    
+    
     @staticmethod
     def do_crawel(keyword,start,offset):
-        pass
-     
+        Spider.crawl_url(keyword, start, offset)
         
+#         task = [
+#                 Spider.crawl_comments(keyword, start, offset,comment_future),
+#                 Spider.crawel_book(book_future)
+#                 ]
+#         pass
+    
+    
+    @classmethod
+    @asyncio.coroutine
+    def crawel_book(self,furture):
+        yield from asyncio.sleep(1)
+        pass
+    
+    
+     
+    @classmethod
+    @asyncio.coroutine   
     def crawl_url(self,keyword,start,offset):
         #https://book.douban.com/subject/20427187/comments/hot?p=1
         if start==0 : start=1
@@ -209,71 +201,83 @@ class Spider():
               'start':0,
               'type':'T'
               }
+                
         while True: 
             data['start']=(start-1)*20
             url=data['action']+data['tag']+'?start='+str(data['start'])+'&type='+data['type']
-            html_str=Requester.open_url(url)
-            urls=re.findall(r"https://book.douban.com/subject/\d+", html_str)
+            try:
+#                 html_str = Requester.open_url(url)
+                html_str = yield from Requester.open_url(url)
+            except Exception as e :
+                print(e)
+                print('Reloading...')
+                html_str = Requester.open_url(url)
+            urls=re.findall(r"(?<=https://book.douban.com/subject/)\d+", html_str)
+#             print(urls)
             self.pub_url_manager.add_new_url(urls)
             start=start+1
             if ((start-1)*20) >((offset-1)*20):
                 break
     
     @classmethod
-    def crawl_comments(self,keyword,start,offset):
+    @asyncio.coroutine
+    def crawl_comments(self,keyword,start,offset,furture):
         if keyword=='':return
         keyword=str(keyword)
         result={'bookid':keyword,'comment-info':[]}
         while True: 
             url='https://book.douban.com/subject/'+keyword+'/comments/hot?p='+str(start)
             html_str=Requester.open_url(url)
-            soup = BeautifulSoup(html_str,'lxml')
-            for item in soup.find_all('li',class_="comment-item"):
-                info={'commentator':'',
-                  'avatar':'',
-                  'commentator_homepage':'',
-                  'comment_content':'',
-                  'comment_date':'',
-                  'comment_vote':'',
-                  'star':''
-                }
-                info['commentator']=item.a['title']            # title
-                info['commentator_homepage']=item.a['href']    # homepage
-                info['avatar']=item.img['src']                 # avatar image
-                info['comment_content']=item.p.text            # comment_content
+            def yeld_f(html_str):
+                soup = BeautifulSoup(html_str,'lxml')
+                for item in soup.find_all('li',class_="comment-item"):
+                    info={'commentator':'',
+                          'avatar':'',
+                          'commentator_homepage':'',
+                          'comment_content':'',
+                          'comment_date':'',
+                          'comment_vote':'',
+                          'star':''
+                    }
+                    info['commentator']=item.a['title']            # title
+                    info['commentator_homepage']=item.a['href']    # homepage
+                    info['avatar']=item.img['src']                 # avatar image
+                    info['comment_content']=item.p.text            # comment_content
         
-                # comment date
-                comment_data=item.find_all(text=re.compile(r'\d{4}-\d{2}-\d{2}'))
-                if len(comment_data)>0:
-                    info['comment_date']=comment_data[0].string
+                    # comment date
+                    comment_data=item.find_all(text=re.compile(r'\d{4}-\d{2}-\d{2}'))
+                    if len(comment_data)>0:
+                        info['comment_date']=comment_data[0].string
                     # vote_count
-                vote_count=item.find_all('span',class_='vote-count')    
-                if len(vote_count)>0:
-                    info['comment_vote']=vote_count[0].text
-                else:
-                    info['comment_vote']=0
+                    vote_count=item.find_all('span',class_='vote-count')    
+                    if len(vote_count)>0:
+                        info['comment_vote']=vote_count[0].text
+                    else:
+                        info['comment_vote']=0
         
-                # start  
-                # <span class="user-stars allstar50 rating" title="力荐"></span>
-                star=item.find_all('span',class_=re.compile(r'(?<=allstar)\d+'))
-                if(len(star))>0:
-                    z=star[0].attrs['class']  # ['user-stars','allstar50','rating']
-                    if len(z)>1:
-                        point=z[1]
-                        s=re.findall(r'\d+',point)   #['50']
-                        if len(s)>=0:
-                            info['star']=s[0]   #50
-#                             print(s[0])
-                        else:
-                            info['star']=0
+                    # start  
+                    # <span class="user-stars allstar50 rating" title="力荐"></span>
+                    star=item.find_all('span',class_=re.compile(r'(?<=allstar)\d+'))
+                    if(len(star))>0:
+                        z=star[0].attrs['class']  # ['user-stars','allstar50','rating']
+                        if len(z)>1:
+                            point=z[1]
+                            s=re.findall(r'\d+',point)   #['50']
+                            if len(s)>=0:
+                                info['star']=s[0]   #50
+                            else:
+                                info['star']=0
 #                 print(info)
 #                 resultx.append(info)
-                result['comment-info'].append(info)
-#             print(resultx) 
+                    result['comment-info'].append(info)
+            
+            yield from yeld_f(html_str)
             start=start+1
             if start > offset:
                 print(result)
+                furture.set_result(result)
                 break
+    
     @staticmethod
     def crawl_annotations(keyword,start,offset):
         #https://book.douban.com/subject/20427187/annotation?sort=rank&start=0
@@ -315,6 +319,6 @@ class Spider():
     
 if __name__=='__main__':
     
-#     Spide.do_crawel('历史',2,3)
+    Spider.do_crawel('历史',2,3)
 #     
-    Spider.crawl_comments(20427187,1,5) 
+#     Spider.crawl_comments(20427187,1,5,'xsx') 
