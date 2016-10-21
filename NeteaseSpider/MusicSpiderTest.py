@@ -9,7 +9,7 @@ log = Log.getLogger('NeteaseSpider')
 # 搜索歌曲 stype=1
 s = "imagine"
 stype = 1
-limit = 1
+limit = 4
 
 #  专辑 stype=10
 # s = "Imagine"
@@ -20,6 +20,7 @@ limit = 1
 # s = "John Lennon"
 # stype = 100
 # limit = 1
+log.info("==================搜索================")
 dig_data, dig_type = netEase.build_dig(s, stype, limit)
 print (dig_data)
 print (dig_type)

@@ -10,8 +10,8 @@ import json
 from OSMusicPlayer.Logging.Logger import Log
 import os
 import urllib.request
-default_timeout = 3
 log = Log.getLogger('NeteaseSpider')
+default_timeout = 3
 
 class NetEase:
     def __init__(self):
@@ -27,7 +27,7 @@ class NetEase:
         }
 
     # 建立挖掘数据
-    def build_dig(self, s, stype, limit):
+    def build_dig(self, s, stype, limit=1):
         data = self.search(s, stype=stype, limit=limit)
         print(data)
         dig_data = []
@@ -70,7 +70,7 @@ class NetEase:
         action = 'http://music.163.com/api/song/detail?ids=[' + (',').join(map(str, ids)) + ']'
         try:
             data = self.httpRequest('GET', action)
-#             print(data)
+            #             print(data)
             return data['songs']
         except:
             return []
@@ -111,6 +111,8 @@ class NetEase:
         print(method, ' 请求')
         print('crawl: ', action)
         log.info('crawl: ' + action)
+
+        connection = None
         if(method == 'GET'):
             connection = requests.get(action, headers=self.header, timeout=default_timeout)
         elif(method == 'POST'):
@@ -150,16 +152,19 @@ class NetEase:
                 timeout=default_timeout,
             )
 
-        log.info(connection.status_code)
+        if connection is not None:
+            log.info(connection.status_code)
 
-        connection.encoding = "utf-8"
-        connection = json.loads(connection.text)
-        return connection
+            connection.encoding = "utf-8"
+            connection = json.loads(connection.text)
+            return connection
+        else:
+            return []
 
     # 挖数据
     def dig_info(self, dig_data ,dig_type):
         temp = []
-        
+
         if (dig_type == 'songs'):
             print('搜索歌曲')
             for i in range(0, len(dig_data) ):
@@ -168,7 +173,7 @@ class NetEase:
                     'artist': [],
                     'song_name': dig_data[i]['name'],
                     'album_name': dig_data[i]['album']['name'],
-                    'mp3_url': dig_data[i]['mp3Url']   
+                    'mp3_url': dig_data[i]['mp3Url']
                 }
                 if 'artist' in dig_data[i]:
                     song_info['artist'] = dig_data[i]['artist']
@@ -223,5 +228,8 @@ class NetEase:
         # file.write(data_byte)
         # file.close()
 
-        urllib.request.urlretrieve(song_info['mp3_url'], fpath)
+        try:
+            urllib.request.urlretrieve(song_info['mp3_url'], fpath)
+        except:
+            return '由于版权保护，您所在的地区暂时无法下载'
         return file_name + '已经下载好了'
