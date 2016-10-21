@@ -1,9 +1,17 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+Created on 2016-10-20
+@author: Tiger Xie <xie_tiger@163.com>
+'''
+
 import requests
 import json
 from OSMusicPlayer.Logging.Logger import Log
+import os
+import urllib.request
 default_timeout = 3
 log = Log.getLogger('NeteaseSpider')
-
 
 class NetEase:
     def __init__(self):
@@ -18,7 +26,7 @@ class NetEase:
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
         }
 
-    # biuld search
+    # 建立挖掘数据
     def build_dig(self, s, stype, limit):
         data = self.search(s, stype=stype, limit=limit)
         print(data)
@@ -26,10 +34,10 @@ class NetEase:
         dig_type = ""
 
         if (stype == 1):
-            # 通过 ids 获得歌曲 songs 详细
             song_ids = []
             for i in range(0, len(data['result']['songs']) ):
                 song_ids.append( data['result']['songs'][i]['id'] )
+            # 通过 ids 获得 songs 详细
             dig_data = self.songs_detail(song_ids)
             dig_type = 'songs'
 
@@ -57,10 +65,9 @@ class NetEase:
         }
         return self.httpRequest('POST', action, data)
 
-    # song ids 拼接成 song urls 得到 details
+    # 根据单曲 ids 获得单曲详细
     def songs_detail(self, ids, offset=0):
         action = 'http://music.163.com/api/song/detail?ids=[' + (',').join(map(str, ids)) + ']'
-        print(action)
         try:
             data = self.httpRequest('GET', action)
 #             print(data)
@@ -68,15 +75,46 @@ class NetEase:
         except:
             return []
 
+    # 根据专辑 id 获取单曲
+    def alum_songs(self, alum_id):
+        action = 'http://music.163.com/api/album/' + str(alum_id)
+        try:
+            data = self.httpRequest('GET', action)
+            # log.info(data)
+            return data['album']['songs']
+        except:
+            return []
+
+    # 根据歌手 id 获得热门50单曲
+    def artist_songs(self, artist_id):
+        action = 'http://music.163.com/api/artist/' + str(artist_id)
+        try:
+            data = self.httpRequest('GET', action)
+            # log.info(data)
+            return data['hotSongs']
+        except:
+            return []
+
+    # 根据歌手 id 获得专辑
+    def artist_alums(self, artist_id, offset=0, limit=1):
+        action = 'http://music.163.com/api/artist/albums/' + str(artist_id) + '?offset=' + str(offset) + "&limit=" + str(limit)
+        try:
+
+            data = self.httpRequest('GET', action)
+            # log.info(data)
+            return data['hotAlbums']
+        except:
+            return []
+
     # HTTP 请求
     def httpRequest(self, method, action, query=None):
+        print(method, ' 请求')
+        print('crawl: ', action)
+        log.info('crawl: ' + action)
         if(method == 'GET'):
-            print('get 请求')
-            url = action if (query == None) else (action + '?' + query)
-            connection = requests.get(url, headers=self.header, timeout=default_timeout)
-
+            connection = requests.get(action, headers=self.header, timeout=default_timeout)
         elif(method == 'POST'):
-            print('post 请求')
+
             # f = open("../Proxy/gnproxy")
             # lines = f.readlines()
             # proxys = []
@@ -165,3 +203,25 @@ class NetEase:
                 temp.append(artist_info)
 
         return temp
+
+    # 下载音乐
+    def download_mp3(self, song_info, save_dir):
+        # 保存文件名： 歌名-歌手-专辑.mp3
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        song_name = song_info['song_name']
+        artist = '&'.join(str(a) for a in song_info['artist']) if type(song_info['artist']) is list else song_info['artist']
+        album_name = song_info['album_name']
+        file_name = song_name + '-' + artist + '-' + album_name + '.mp3'
+        fpath = os.path.join(save_dir, file_name)
+        log.info(fpath)
+        if os.path.exists(fpath):
+            return file_name + '已经下载过此mp3'
+
+        # data_byte = requests.get(song_info['mp3_url']).text
+        # file = open(fpath, 'wb')
+        # file.write(data_byte)
+        # file.close()
+
+        urllib.request.urlretrieve(song_info['mp3_url'], fpath)
+        return file_name + '已经下载好了'
