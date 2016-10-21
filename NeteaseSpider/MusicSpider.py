@@ -9,7 +9,7 @@ import requests
 import json
 from OSMusicPlayer.Logging.Logger import Log
 import os
-default_timeout = 3
+import urllib.request
 log = Log.getLogger('NeteaseSpider')
 
 class NetEase:
@@ -24,9 +24,10 @@ class NetEase:
             'Referer': 'http://music.163.com/search/',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
         }
+        self.default_timeout = 3
 
     # 建立挖掘数据
-    def build_dig(self, s, stype, limit):
+    def build_dig(self, s, stype, limit=1):
         data = self.search(s, stype=stype, limit=limit)
         print(data)
         dig_data = []
@@ -110,8 +111,10 @@ class NetEase:
         print(method, ' 请求')
         print('crawl: ', action)
         log.info('crawl: ' + action)
+
+        connection = None
         if(method == 'GET'):
-            connection = requests.get(action, headers=self.header, timeout=default_timeout)
+            connection = requests.get(action, headers=self.header, timeout=self.default_timeout)
         elif(method == 'POST'):
 
             # f = open("../Proxy/gnproxy")
@@ -146,14 +149,17 @@ class NetEase:
                 action,
                 data=query,
                 headers=self.header,
-                timeout=default_timeout,
+                timeout=self.default_timeout,
             )
 
-        log.info(connection.status_code)
+        if connection is not None:
+            log.info(connection.status_code)
 
-        connection.encoding = "utf-8"
-        connection = json.loads(connection.text)
-        return connection
+            connection.encoding = "utf-8"
+            connection = json.loads(connection.text)
+            return connection
+        else:
+            return []
 
     # 挖数据
     def dig_info(self, dig_data ,dig_type):
@@ -206,14 +212,24 @@ class NetEase:
     # 下载音乐
     def download_mp3(self, song_info, save_dir):
         # 保存文件名： 歌名-歌手-专辑.mp3
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        song_name = song_info['song_name']
         artist = '&'.join(str(a) for a in song_info['artist']) if type(song_info['artist']) is list else song_info['artist']
-        file_name = song_info['song_name'] + '-' + artist + '-' + song_info['album_name'] + '.mp3'
+        album_name = song_info['album_name']
+        file_name = song_name + '-' + artist + '-' + album_name + '.mp3'
         fpath = os.path.join(save_dir, file_name)
+        log.info(fpath)
         if os.path.exists(fpath):
-            return '已经下载过此mp3'
+            return file_name + '已经下载过此mp3'
 
-        data_byte = requests.get(song_info['mp3_url']).text
-        file = open(fpath, 'wb')
-        file.write(data_byte)
-        file.close()
-        return '已经下载好了'
+        # data_byte = requests.get(song_info['mp3_url']).text
+        # file = open(fpath, 'wb')
+        # file.write(data_byte)
+        # file.close()
+
+        try:
+            urllib.request.urlretrieve(song_info['mp3_url'], fpath)
+        except:
+            return '由于版权保护，您所在的地区暂时无法下载'
+        return file_name + '已经下载好了'
