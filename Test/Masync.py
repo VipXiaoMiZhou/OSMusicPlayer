@@ -43,7 +43,6 @@ if __name__ == '__main__':
     review_future = asyncio.Future()
     comment_future = asyncio.Future()
     tasks = [
-             asyncio.ensure_future(crawl_annotations(annotation_future)),
              asyncio.ensure_future(crawl_book(book_future)),
              asyncio.ensure_future(crawl_comments(comment_future)),
              asyncio.ensure_future(crawl_reviews(review_future))

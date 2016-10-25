@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../OSMusicPlayer/.idea/OSMusicPlayer.iml" filepath="$PROJECT_DIR$/../OSMusicPlayer/.idea/OSMusicPlayer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../SimpleCrawler/.idea/SimpleCrawler.iml" filepath="$PROJECT_DIR$/../SimpleCrawler/.idea/SimpleCrawler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/book_crawel.iml" filepath="$PROJECT_DIR$/.idea/book_crawel.iml" />
+    </modules>
+  </component>
+</project>
