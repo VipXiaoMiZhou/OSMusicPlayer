@@ -142,25 +142,32 @@ class Spider():
             html_str = Requester.open_url(url)
             def parse_html(html_str):
                 soup = BeautifulSoup(html_str,'lxml')
-                for item in soup.find_all('li',class_='ctsh clearfix'):
-                    print(item)
-                    print(item.find_all(text=re.compile(r'\d{4}-\d{2}-\d{2}'))[0])  #time
-                    print(item.find_all('div',class_='all hidden')[0].text)
+                
+                # annotions
+#                 for item in soup.find_all('div',class_='all hidden'):
+#                     print(item.a['href'])
+#                     pass
+                
+                 
+                for item in soup.find_all('p',class_='user'):
+#                     print(item)
+                    print(item.a['href']);
+                    print(item.a['title']);
                     star = item.find_all('span', class_=re.compile(r'(?<=allstar)\d+'))
                     if (len(star)) > 0:
                         z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
-                        print(z)
-                        if len(z) > 1:
-                            point = z[1]
+                        if len(z) > 0:
+                            point = z[0]
                             s = re.findall(r'\d+', point)  # ['50']
                             if len(s) >= 0:
-                                # info['star'] = s[0]  # 50
-                                print(star)
+                                print(s[0])  # 50
                             else:
                                 print(0)
-                                # info['star'] = 0
-                    print('********************')
-                pass
+                for item in soup.find_all('p',class_='pl'):
+                    print(item.span)
+                
+            
+                
             parse_html(html_str)
             start = start + 1
             if ((start - 1) * 10) > ((offset - 1) * 10):
@@ -188,6 +195,5 @@ class Spider():
 if __name__ == '__main__':
     # Spider.do_crawel('历史', 2, 3)
     #
-    # Spider.crawl_comments(1770782,1,5,'xsx')
-
+    #Spider.crawl_comments(1770782,1,5,'xsx')
     Spider.crawl_annotations('1770782',1,2)
