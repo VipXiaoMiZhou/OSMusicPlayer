@@ -106,7 +106,7 @@ class Spider():
                         info['comment_vote'] = 0
 
                     # start
-                    # <span class="user-stars allstar50 rating" title="力荐"></span>
+                    # <span class="user-stars allstar50 rating" title="åè"></span>
                     star = item.find_all('span', class_=re.compile(r'(?<=allstar)\d+'))
                     if (len(star)) > 0:
                         z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
@@ -149,22 +149,90 @@ class Spider():
 #                     pass
                 
                  
-                for item in soup.find_all('p',class_='user'):
-#                     print(item)
-                    print(item.a['href']);
-                    print(item.a['title']);
-                    star = item.find_all('span', class_=re.compile(r'(?<=allstar)\d+'))
+#                 for item in soup.find_all('p',class_='user'):
+# #                     print(item)
+#                     print(item.a['href']);
+#                     print(item.a['title']);
+#                     star = item.find_all('span', class_=re.compile(r'(?<=allstar)\d+'))
+#                     if (len(star)) > 0:
+#                         z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
+#                         if len(z) > 0:
+#                             point = z[0]
+#                             s = re.findall(r'\d+', point)  # ['50']
+#                             if len(s) >= 0:
+#                                 print(s[0])  # 50
+#                             else:
+#                                 print(0)
+                
+                for item in soup.find_all('li',class_='ctsh clearfix'):
+                    
+                    info = {'username': '',
+                            'avatar': '',
+                            'user_homepage': '',
+                            'ananotation_content': '',
+                            'ananotation_date': '',
+                            'ananotation_vote': '',
+                            'star': ''
+                            }
+                    
+                    # user link
+                    user_url = item.find('div',class_='ilst').a['href']
+                    # name
+                    user_name = item.find('div',class_='ilst').img['alt']
+                    #jgp 
+                    user_pic = item.find('div',class_='ilst').img['src']
+        
+                    annotation = item.find('div',class_='all hidden').text
+#                     print(annotation)
+                    star = item.find('span', class_=re.compile(r'(?<=allstar)\d+'))
+                    
                     if (len(star)) > 0:
                         z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
                         if len(z) > 0:
                             point = z[0]
                             s = re.findall(r'\d+', point)  # ['50']
                             if len(s) >= 0:
-                                print(s[0])  # 50
+                                star = s[0] # 50
                             else:
-                                print(0)
-                for item in soup.find_all('p',class_='pl'):
-                    print(item.span)
+                                star =0
+                    print(star)
+#                     print(annotation.split(' '))
+                    an=''
+                    date_p = re.compile(r'\d{4}-\d{2}-\d{2}')
+                    time_p = re.compile(r'\d{2}:\d{2}')
+                    date =''
+                    time =''
+                    for str in annotation.split(' '):
+                        if ' ' == str or '\n'==str or ''==str:
+                            continue
+                        elif date_p.match(str) :
+                            date = str
+                            continue
+                        elif time_p.match(str) :
+                            time = str
+                            continue
+                        else:
+                            an=an+str   
+                    date = date + ' ' + time
+                    annotation = an[:-28]
+                    
+                    
+#                     print(page)
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    print(user_name)
+                    print(user_pic)
+                    print(user_url)
+                    print(date)
+                    print(annotation)
+                    
+                    print('>>>>>>>>>>>>>>>>>>>>>>')
+#                    print(item.span)
                 
             
                 
@@ -193,7 +261,7 @@ class Spider():
 
 
 if __name__ == '__main__':
-    # Spider.do_crawel('历史', 2, 3)
+    # Spider.do_crawel('åå²', 2, 3)
     #
     #Spider.crawl_comments(1770782,1,5,'xsx')
     Spider.crawl_annotations('1770782',1,2)
