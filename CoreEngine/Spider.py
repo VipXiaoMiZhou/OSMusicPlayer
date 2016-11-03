@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 import re
 import random
+from distutils.log import info
 class Spider():
     pub_url_manager = URLManager()
     # https://book.douban.com/tag/%E9%9A%8F%E7%AC%94
@@ -136,34 +137,12 @@ class Spider():
         if keyword == '' or start > offset or start < 0:
             return
         keyword=str(keyword)
-        result={'bookid':'','annotations':[]}
+        result={'bookid':keyword,'annotations':[]}
         while True:
             url='https://book.douban.com/subject/'+keyword+'/annotation?sort=rank&start='+str((start-1)*10)
             html_str = Requester.open_url(url)
             def parse_html(html_str):
                 soup = BeautifulSoup(html_str,'lxml')
-                
-                # annotions
-#                 for item in soup.find_all('div',class_='all hidden'):
-#                     print(item.a['href'])
-#                     pass
-                
-                 
-#                 for item in soup.find_all('p',class_='user'):
-# #                     print(item)
-#                     print(item.a['href']);
-#                     print(item.a['title']);
-#                     star = item.find_all('span', class_=re.compile(r'(?<=allstar)\d+'))
-#                     if (len(star)) > 0:
-#                         z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
-#                         if len(z) > 0:
-#                             point = z[0]
-#                             s = re.findall(r'\d+', point)  # ['50']
-#                             if len(s) >= 0:
-#                                 print(s[0])  # 50
-#                             else:
-#                                 print(0)
-                
                 for item in soup.find_all('li',class_='ctsh clearfix'):
                     
                     info = {'username': '',
@@ -171,9 +150,9 @@ class Spider():
                             'user_homepage': '',
                             'ananotation_content': '',
                             'ananotation_date': '',
-                            'ananotation_vote': '',
                             'star': ''
                             }
+                    
                     
                     # user link
                     user_url = item.find('div',class_='ilst').a['href']
@@ -184,24 +163,11 @@ class Spider():
         
                     annotation = item.find('div',class_='all hidden').text
 #                     print(annotation)
-                    star = item.find('span', class_=re.compile(r'(?<=allstar)\d+'))
-                    
-                    if (len(star)) > 0:
-                        z = star[0].attrs['class']  # ['user-stars','allstar50','rating']
-                        if len(z) > 0:
-                            point = z[0]
-                            s = re.findall(r'\d+', point)  # ['50']
-                            if len(s) >= 0:
-                                star = s[0] # 50
-                            else:
-                                star =0
-                    print(star)
-#                     print(annotation.split(' '))
-                    an=''
                     date_p = re.compile(r'\d{4}-\d{2}-\d{2}')
                     time_p = re.compile(r'\d{2}:\d{2}')
                     date =''
                     time =''
+                    an=''
                     for str in annotation.split(' '):
                         if ' ' == str or '\n'==str or ''==str:
                             continue
@@ -216,31 +182,19 @@ class Spider():
                     date = date + ' ' + time
                     annotation = an[:-28]
                     
-                    
-#                     print(page)
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    print(user_name)
-                    print(user_pic)
-                    print(user_url)
-                    print(date)
-                    print(annotation)
-                    
-                    print('>>>>>>>>>>>>>>>>>>>>>>')
-#                    print(item.span)
-                
-            
-                
+                    info['username'] = user_name
+                    info['avatar'] = user_pic
+                    info['user_homepage'] =user_url
+                    info['ananotation_content'] = annotation
+                    info['ananotation_date'] = date
+                    result['annotations'].append(info)          
             parse_html(html_str)
+            
             start = start + 1
             if ((start - 1) * 10) > ((offset - 1) * 10):
-                return
-
+                break
+        print(result)
+            
     @staticmethod
     def crawl_reviews(keyword, start, offset):
         # https://book.douban.com/subject/20427187/reviews?sort=hotest&start=20
@@ -264,4 +218,4 @@ if __name__ == '__main__':
     # Spider.do_crawel('åå²', 2, 3)
     #
     #Spider.crawl_comments(1770782,1,5,'xsx')
-    Spider.crawl_annotations('1770782',1,2)
+    Spider.crawl_annotations('20427187',1,2)
