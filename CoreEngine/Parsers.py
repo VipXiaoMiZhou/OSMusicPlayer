@@ -7,7 +7,9 @@ Created on Nov 17, 2016
 from bs4 import BeautifulSoup
 from CrawFriends import Requester
 import re
-class CommentParser(object):
+from OSMusicPlayer.BookCrawel.CoreEngine.SuperParser import SuperParser
+
+class CommentParser(SuperParser):
     '''
     classdocs
     '''
@@ -69,7 +71,7 @@ class CommentParser(object):
         return result
 
 
-class BookInfoParser(object):
+class BookInfoParser(SuperParser):
     
     def __init__(self):
         pass
@@ -219,7 +221,7 @@ class BookInfoParser(object):
         return(book_info,parse_borrowinfo(soup),parse_buyinfo(soup))
         pass
 
-class AnnotationParser(object):
+class AnnotationParser(SuperParser):
     
     def __init__(self):
         pass

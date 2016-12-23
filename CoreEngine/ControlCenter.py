@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 '''
-OSMusicPlayer.CoreEngine.ControlCenter -- shortdesc
+OSMusicPlayer.BookCrawel.CoreEngine.ControlCenter -- shortdesc
 
-OSMusicPlayer.CoreEngine.ControlCenter is a description
+OSMusicPlayer.BookCrawel.CoreEngine.ControlCenter is a description
 
 It defines classes_and_methods
 

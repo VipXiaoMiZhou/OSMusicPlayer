@@ -51,47 +51,31 @@ class URLManager(Singleton):
             else:
                 URLManager.new_url.add(url)
     @staticmethod
-    def url_is_empty():
+    def url_is_empty(): 
         if len(URLManager.new_url) ==0:
             return True
         else:
             return False
     @staticmethod
-    def url_size():
-        return len(URLManager.new_url)
+    def url_size():return len(URLManager.new_url)
     @staticmethod
     def get_url(choice):
-        if len(URLManager.new_url) == 0 :
-            return
-        u = URLManager.new_url.pop()
-        
-        
+        if len(URLManager.new_url) == 0 : return
         url = URLManager.new_url.pop()
         URLManager.url_reposity.add(url)
-        
-        for sets in URLManager.URLS:
-            sets.add(u)
-        
-        
+        for sets in URLManager.URLS: sets.add(url)
         # 0 crawel book info
-        if 0 == choice:
-            return URLManager.URLS[choice].pop()
+        if 0 == choice: return URLManager.URLS[choice].pop()
         
         # 1 crawel comments
-        elif 1 == choice:
-            return URLManager.URLS[choice].pop()
+        elif 1 == choice: return URLManager.URLS[choice].pop()
         
-        elif 2 == choice:
-            return URLManager.URLS[choice].pop()
-        elif 3 == choice:
-            return URLManager.URLS[choice].pop()
-        else:
-            return "null"
+        elif 2 == choice: return URLManager.URLS[choice].pop()
+        elif 3 == choice: return URLManager.URLS[choice].pop()
+        else: return "null"
     @staticmethod
-    def get_url_repository():
-        return URLManager.url_reposity
+    def get_url_repository(): return URLManager.url_reposity
 
-    
 
 '''ok
 '''
